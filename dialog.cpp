@@ -1,10 +1,10 @@
 #include <QtGui>
 #include "dialog.h"
 
-#include <QAction>
-
 Dialog::Dialog()
+    : translateKeySequence("Ctrl+C+X")
 {
+    setVisible(false);
     createActions();
     createTrayIcon();
     trayIcon->show();
@@ -12,19 +12,16 @@ Dialog::Dialog()
 
 void Dialog::createActions()
 {
-    minimize = new QAction(tr("&Minimize"),this);
-    restore = new QAction(tr("&Restore"),this);
+    setKeySequence = new QAction(tr("&Set the shortcut"));
     quit = new QAction(tr("&Quit"),this);
-
-    connect(minimize, &QAction::triggered, this, &Dialog::hide);
-    connect(restore, &QAction::triggered, this, &Dialog::showNormal);
+    connect(setKeySequence, &QAction::triggered, new KeySequenceDialog(), &Dialog::open);
     connect(quit, &QAction::triggered, qApp, &QGuiApplication::quit);
 }
 
 void Dialog::createTrayIcon() {
     trayIconMenu = new QMenu(this);
-    trayIconMenu->addAction(minimize);
-    trayIconMenu->addAction(restore);
+    trayIconMenu->addSeparator();
+    trayIconMenu->addAction(setKeySequence);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(quit);
 
@@ -33,9 +30,7 @@ void Dialog::createTrayIcon() {
     trayIcon->setIcon(QIcon(":/icon.svg"));
 }
 
-void Dialog::setVisible(bool visible)
-{
-    minimize->setEnabled(visible);
-    restore->setEnabled(isMaximized() || !visible);
-    QDialog::setVisible(visible);
+KeySequenceDialog::KeySequenceDialog() {
+    setWindowTitle("Set the shorcut");
+
 }

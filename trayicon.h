@@ -1,5 +1,5 @@
-#ifndef DIALOG_H
-#define DIALOG_H
+#ifndef TRAYICON_H
+#define TRAYICON_H
 
 #include <QSystemTrayIcon>
 #include <QDialog>
@@ -8,12 +8,12 @@
 #include <QMenu>
 #include <QKeySequence>
 
-class Dialog : public QDialog
+class TrayIcon : public QSystemTrayIcon
 {
     Q_OBJECT
 
 public:
-    Dialog();
+    TrayIcon();
 
 private:
     QAction* setKeySequence;
@@ -21,12 +21,7 @@ private:
 
     QKeySequence translateKeySequence;
 
-    QSystemTrayIcon* trayIcon;
     QMenu* trayIconMenu;
-
-
-    void createActions();
-    void createTrayIcon();
 };
 
 class KeySequenceDialog : public QDialog {
@@ -36,4 +31,4 @@ public:
     KeySequenceDialog();
 };
 
-#endif // DIALOG_H
+#endif // TRAYICON_H

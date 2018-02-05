@@ -1,6 +1,6 @@
 #include <QtGui>
 #include <QApplication>
-#include "dialog.h"
+#include "trayicon.h"
 
 int main(int argc, char *argv[]) {
     Q_INIT_RESOURCE(resources);
@@ -9,8 +9,8 @@ int main(int argc, char *argv[]) {
 
     QApplication::setQuitOnLastWindowClosed(false);
 
-    Dialog dialog;
-    dialog.show();
+    TrayIcon trayIcon;
+    trayIcon.show();
 
     return app.exec();
 }
