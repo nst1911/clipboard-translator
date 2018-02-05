@@ -5,10 +5,16 @@ TrayIcon::TrayIcon()
 {
     setKeySequence = new QAction(tr("&Set the shortcut"));
     quit = new QAction(tr("&Quit"),this);
-    setDialog = new KeySequenceDialog(QKeySequence(tr("Alt+1")));
+
+    setDialog = new KeySequenceDialog(QKeySequence(tr("Ctrl+1")));
+
+    hotkey.setShortcut(setDialog->getKeySequence(),true);
 
     connect(setKeySequence, &QAction::triggered, setDialog, &QDialog::open);
     connect(quit, &QAction::triggered, qApp, &QGuiApplication::quit);
+
+    connect(&hotkey, &QHotkey::activated, this, &TrayIcon::translate);
+    connect(setDialog, &KeySequenceDialog::keySequenceChanged, this, [&]() { hotkey.setShortcut(setDialog->getKeySequence(),true); });
 
     trayIconMenu = new QMenu();
     trayIconMenu->addAction(setKeySequence);
@@ -19,12 +25,17 @@ TrayIcon::TrayIcon()
     setIcon(QIcon(":/icon.svg"));
 }
 
+void TrayIcon::translate() {
+    qDebug("Kek");
+}
+
+
 KeySequenceDialog::KeySequenceDialog(QKeySequence keySequence)
-    : translateKeySequence(keySequence)
+    : keySequence(keySequence)
 {
     labelBeforeField = new QLabel(tr("Current shortcut: "), this);
 
-    keySequenceField = new QLineEdit(translateKeySequence.toString(), this);
+    keySequenceField = new QLineEdit(keySequence.toString(), this);
     keySequenceField->setReadOnly(true);
 
     setButton = new QPushButton(tr("Enter new shortcut"),this);
@@ -68,12 +79,14 @@ void KeySequenceDialog::keyPressEvent(QKeyEvent* keyEvent) {
         if(modifiers & Qt::MetaModifier)
             keyInt += Qt::META;
 
-        translateKeySequence = QKeySequence(keyInt);
-        keySequenceField->setText(translateKeySequence.toString());
+        keySequence = QKeySequence(keyInt);
+        keySequenceField->setText(keySequence.toString());
 
         isClicked = false;
 
         labelAfterButton->setVisible(false);
+
+        emit keySequenceChanged();
     }
 
 }

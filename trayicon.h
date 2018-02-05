@@ -10,6 +10,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QGridLayout>
+#include <QHotkey>
 
 class KeySequenceDialog;
 
@@ -20,6 +21,9 @@ class TrayIcon : public QSystemTrayIcon
 public:
     TrayIcon();
 
+public slots:
+    void translate();
+
 private:
     QAction* setKeySequence;
     QAction* quit;
@@ -27,15 +31,21 @@ private:
     QMenu* trayIconMenu;
 
     KeySequenceDialog* setDialog;
+
+    QHotkey hotkey;
+
 };
 
 class KeySequenceDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit KeySequenceDialog(QKeySequence keySequence);
+    explicit KeySequenceDialog(QKeySequence translateKeySequence);
 
-    QKeySequence getTranslateKeySequence() const { return translateKeySequence; }
+    QKeySequence getKeySequence() const { return keySequence; }
+
+signals:
+    void keySequenceChanged();
 
 protected:
     void keyPressEvent(QKeyEvent*) override;
@@ -44,9 +54,10 @@ private:
     QLabel* labelBeforeField;
     QLineEdit* keySequenceField;
     QLabel* labelAfterButton;
-    QPushButton* setButton;
-    QKeySequence translateKeySequence;
 
+    QKeySequence keySequence;
+
+    QPushButton* setButton;
     bool isClicked;
 };
 
