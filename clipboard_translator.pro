@@ -28,11 +28,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     trayicon.cpp \
-    translationdownloader.cpp
+    translationdownloader.cpp \
+    mainclass.cpp \
+    keysequencedialog.cpp
 
 HEADERS += \
     trayicon.h \
-    translationdownloader.h
+    translationdownloader.h \
+    mainclass.h \
+    keysequencedialog.h
 
 RESOURCES += \
     resources.qrc
