@@ -24,7 +24,10 @@ private slots:
 private:
     QNetworkAccessManager* networkManager;
 
-    QString APIkey, translation;
+    QString APIkey, translate;
+
+
+    QNetworkReply::NetworkError errorFlag;
 
 
 

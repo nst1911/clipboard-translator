@@ -2,6 +2,10 @@
 #include <QNetworkRequest>
 #include <QTextCodec>
 #include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QJsonArray>
 
 TranslationDownloader::TranslationDownloader(QObject *parent)
     : QObject(parent),
@@ -19,16 +23,19 @@ void TranslationDownloader::sendText(const QString& clipboardText)
 }
 
 void TranslationDownloader::result(QNetworkReply* reply) {
-    if (reply->error()) {
+    errorFlag = reply->error();
+    if (errorFlag) {
+        translate = reply->errorString();
         qDebug() << reply->errorString();
-        translation = reply->errorString();
     }
-    else
-        translation = QString(reply->readAll());
+    else {
+        QJsonDocument document = QJsonDocument::fromJson(reply->readAll());
+        translate = document.object().value("text").toArray().at(0).toString();
+    }
     emit readyToRead();
 }
 
 QString TranslationDownloader::getTranslation() const
 {
-    return translation;
+       return translate;
 }
