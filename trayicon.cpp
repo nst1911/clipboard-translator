@@ -24,7 +24,7 @@ TrayIcon::TrayIcon()
     trayIconMenu->addAction(quit);
 
     setContextMenu(trayIconMenu);
-    setIcon(QIcon(":/icon.svg"));
+    setIcon(QIcon(":/icon.png"));
 }
 
 void TrayIcon::translate() {
@@ -36,14 +36,13 @@ void TrayIcon::translate() {
 
     connect(downloader, &TranslationDownloader::readyToRead, this, [this,clipboardText]() {
         showMessage("Окно перевода",
-                    "Исходный текст:\n" + downloader->getTranslation() +
-                    "\n\nПереведенный текст:\n" + clipboardText +
+                    "[Исходный текст]\n" + clipboardText  +
+                    "\n\n[Переведенный текст]\n" + downloader->getTranslation() +
                     "\n\n[Переведено сервисом «Яндекс.Переводчик» http://translate.yandex.ru/]",
                     QSystemTrayIcon::NoIcon,
                     5000);
     });
 }
-
 
 KeySequenceDialog::KeySequenceDialog(QKeySequence keySequence)
     : keySequence(keySequence)
