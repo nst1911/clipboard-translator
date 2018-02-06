@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui xml svg
+QT       += core gui xml svg network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -27,10 +27,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
-    trayicon.cpp
+    trayicon.cpp \
+    translationdownloader.cpp
 
 HEADERS += \
-    trayicon.h
+    trayicon.h \
+    translationdownloader.h
 
 RESOURCES += \
     resources.qrc

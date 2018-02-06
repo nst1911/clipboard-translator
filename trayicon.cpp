@@ -10,6 +10,8 @@ TrayIcon::TrayIcon()
 
     hotkey.setShortcut(setDialog->getKeySequence(),true);
 
+    downloader = new TranslationDownloader(this);
+
     connect(setKeySequence, &QAction::triggered, setDialog, &QDialog::open);
     connect(quit, &QAction::triggered, qApp, &QGuiApplication::quit);
 
@@ -26,7 +28,20 @@ TrayIcon::TrayIcon()
 }
 
 void TrayIcon::translate() {
-    qDebug("Kek");
+    const QClipboard *clipboard = qApp->clipboard();
+
+    QString clipboardText(clipboard->text());
+
+    downloader->sendText(clipboardText);
+
+    connect(downloader, &TranslationDownloader::readyToRead, this, [this,clipboardText]() {
+        showMessage("Окно перевода",
+                    "Исходный текст:\n" + downloader->getTranslation() +
+                    "\n\nПереведенный текст:\n" + clipboardText +
+                    "\n\n[Переведено сервисом «Яндекс.Переводчик» http://translate.yandex.ru/]",
+                    QSystemTrayIcon::NoIcon,
+                    5000);
+    });
 }
 
 

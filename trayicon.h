@@ -1,6 +1,7 @@
 #ifndef TRAYICON_H
 #define TRAYICON_H
 
+#include "translationdownloader.h"
 #include <QAction>
 #include <QDialog>
 #include <QSystemTrayIcon>
@@ -31,9 +32,9 @@ private:
     QMenu* trayIconMenu;
 
     KeySequenceDialog* setDialog;
-
     QHotkey hotkey;
 
+    TranslationDownloader* downloader;
 };
 
 class KeySequenceDialog : public QDialog {
