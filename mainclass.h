@@ -4,7 +4,7 @@
 #include <QObject>
 #include "trayicon.h"
 #include "settingsdialog.h"
-#include "translationdownloader.h"
+#include "textfiledownloader.h"
 #include <QHotkey>
 
 class MainClass : public QWidget
@@ -23,7 +23,8 @@ private:
     SettingsDialog* settingsDialog;
     QHotkey hotkey;
 
-    TranslationDownloader* downloader;
+    QString APIkey, language;
+    TextFileDownloader* downloader;
 };
 
 #endif // MAINCLASS_H
