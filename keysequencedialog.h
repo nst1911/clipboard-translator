@@ -11,7 +11,7 @@ class KeySequenceDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit KeySequenceDialog(QKeySequence translateKeySequence);
+    explicit KeySequenceDialog(QKeySequence translateKeySequence, QWidget* parent = nullptr);
 
     QKeySequence getKeySequence() const { return keySequence; }
 

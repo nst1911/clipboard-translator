@@ -4,6 +4,7 @@
 #include <QAction>
 #include <QSystemTrayIcon>
 #include <QMenu>
+#include <QToolTip>
 
 
 class TrayIcon : public QSystemTrayIcon
@@ -15,7 +16,7 @@ public:
 
 private:
     friend class MainClass;
-    QAction* setKeySequence;
+    QAction* settings;
     QAction* quit;
 
     QMenu* trayIconMenu;

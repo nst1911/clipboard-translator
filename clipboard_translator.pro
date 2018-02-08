@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui xml svg network
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,13 +30,13 @@ SOURCES += \
     trayicon.cpp \
     translationdownloader.cpp \
     mainclass.cpp \
-    keysequencedialog.cpp
+    settingsdialog.cpp
 
 HEADERS += \
     trayicon.h \
     translationdownloader.h \
     mainclass.h \
-    keysequencedialog.h
+    settingsdialog.h
 
 RESOURCES += \
     resources.qrc

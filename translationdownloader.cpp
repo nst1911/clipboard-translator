@@ -15,27 +15,29 @@ TranslationDownloader::TranslationDownloader(QObject *parent)
     connect(networkManager, &QNetworkAccessManager::finished, this, &TranslationDownloader::result);
 }
 
-void TranslationDownloader::sendText(const QString& clipboardText)
+void TranslationDownloader::sendText(const QString& clipboardText, const QString& resultLanguage)
 {
-    QUrl url("https://translate.yandex.net/api/v1.5/tr.json/translate?key=" + APIkey + "&text=" + clipboardText + "&lang=ru");
+    QUrl url("https://translate.yandex.net/api/v1.5/tr.json/translate?"
+             "key=" + APIkey +
+             "&text=" + clipboardText +
+             "&lang=" + resultLanguage);
     QNetworkRequest request(url);
     networkManager->get(request);
 }
 
 void TranslationDownloader::result(QNetworkReply* reply) {
-    errorFlag = reply->error();
-    if (errorFlag) {
-        translate = reply->errorString();
+    if (reply->error()) {
+        translatedText = reply->errorString();
         qDebug() << reply->errorString();
     }
     else {
         QJsonDocument document = QJsonDocument::fromJson(reply->readAll());
-        translate = document.object().value("text").toArray().at(0).toString();
+        translatedText = document.object().value("text").toArray().at(0).toString();
     }
     emit readyToRead();
 }
 
 QString TranslationDownloader::getTranslation() const
 {
-       return translate;
+       return translatedText;
 }

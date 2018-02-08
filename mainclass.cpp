@@ -4,14 +4,15 @@
 MainClass::MainClass()
 {
     trayIcon = new TrayIcon(this);
-    setDialog = new KeySequenceDialog(QKeySequence(tr("Ctrl+1")));
-    hotkey.setShortcut(setDialog->getKeySequence(),true);
+    settingsDialog = new SettingsDialog(QKeySequence(tr("Ctrl+1")),this);
+    hotkey.setShortcut(settingsDialog->getKeySequence(),true);
     downloader = new TranslationDownloader(this);
 
-    connect(trayIcon->setKeySequence, &QAction::triggered, setDialog, &QDialog::open);
+    connect(trayIcon->settings, &QAction::triggered, settingsDialog, &QDialog::open);
     connect(trayIcon->quit, &QAction::triggered, qApp, &QGuiApplication::quit);
+    connect(settingsDialog, &SettingsDialog::keySequenceChanged, this, [&]() { hotkey.setShortcut(settingsDialog->getKeySequence(),true); });
     connect(&hotkey, &QHotkey::activated, this, &MainClass::translate);
-    connect(setDialog, &KeySequenceDialog::keySequenceChanged, this, [&]() { hotkey.setShortcut(setDialog->getKeySequence(),true); });
+
 }
 
 void MainClass::setVisible(bool isVisible) {
@@ -23,7 +24,7 @@ void MainClass::translate() {
 
     QString clipboardText(clipboard->text());
 
-    downloader->sendText(clipboardText);
+    downloader->sendText(clipboardText,"ru");
 
     connect(downloader, &TranslationDownloader::readyToRead, this, [this,clipboardText]() {
         trayIcon->showMessage("Окно перевода",

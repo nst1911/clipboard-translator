@@ -2,8 +2,8 @@
 #include <QGridLayout>
 #include <QKeyEvent>
 
-KeySequenceDialog::KeySequenceDialog(QKeySequence keySequence)
-    : keySequence(keySequence)
+KeySequenceDialog::KeySequenceDialog(QKeySequence keySequence, QWidget* parent)
+    : QDialog(parent), keySequence(keySequence)
 {
     labelBeforeField = new QLabel(tr("Current shortcut: "), this);
 

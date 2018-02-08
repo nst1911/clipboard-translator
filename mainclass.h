@@ -3,14 +3,14 @@
 
 #include <QObject>
 #include "trayicon.h"
+#include "settingsdialog.h"
 #include "translationdownloader.h"
-#include "keysequencedialog.h"
 #include <QHotkey>
-#include <QMainWindow>
 
-class MainClass : public QMainWindow
+class MainClass : public QWidget
 {
     Q_OBJECT
+
 public:
     MainClass();
     void setVisible(bool) override;
@@ -20,8 +20,7 @@ public slots:
 
 private:
     TrayIcon* trayIcon;
-
-    KeySequenceDialog* setDialog;
+    SettingsDialog* settingsDialog;
     QHotkey hotkey;
 
     TranslationDownloader* downloader;

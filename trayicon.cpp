@@ -4,11 +4,13 @@
 TrayIcon::TrayIcon(QObject* parent)
     : QSystemTrayIcon(parent)
 {
-    setKeySequence = new QAction(tr("&Set the shortcut"),this);
+    settings = new QAction(tr("&Settings"),this);
     quit = new QAction(tr("&Quit"),this);
 
+    setToolTip("Clipboard Translator\n" + tr("Press to open the context menu"));
+
     trayIconMenu = new QMenu();
-    trayIconMenu->addAction(setKeySequence);
+    trayIconMenu->addAction(settings);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(quit);
 
