@@ -26,9 +26,9 @@ PopUpWindow::PopUpWindow(int duration, QWidget *parent)
     sourceTextWidget      = new QTextEdit(this);
     sourceTextWidget->setReadOnly(true);
     sourceTextWidget->setFrameStyle(QFrame::Box | QFrame::Raised);
-    translationTextWidget = new QTextEdit(this);
-    translationTextWidget->setReadOnly(true);
-    translationTextWidget->setFrameStyle(QFrame::Box | QFrame::Raised);
+    resultTextWidget = new QTextEdit(this);
+    resultTextWidget->setReadOnly(true);
+    resultTextWidget->setFrameStyle(QFrame::Box | QFrame::Raised);
 
     QLabel* arrowImage = new QLabel(this);
     image = new QImage(":/arrow.png");
@@ -48,7 +48,7 @@ PopUpWindow::PopUpWindow(int duration, QWidget *parent)
     layout->addWidget(languagesLabel,0, Qt::AlignCenter);
     layout->addWidget(sourceTextWidget);
     layout->addWidget(arrowImage,0,Qt::AlignCenter);
-    layout->addWidget(translationTextWidget);
+    layout->addWidget(resultTextWidget);
     layout->addWidget(yandexLabel);
 
     /* Animation initialization */
@@ -72,7 +72,7 @@ void PopUpWindow::show()
 {
     QWidget::show();
 
-    languagesLabel->setText("<b>" + sourceLang + "</b> -> <b>" + translationLang + "</b>");
+    languagesLabel->setText("<b>" + sourceLang + "</b> -> <b>" + resultLang + "</b>");
 
     setWindowOpacity(0.0);
 
@@ -114,10 +114,10 @@ void PopUpWindow::setSourceText(const QString& text, const QString& language)
 
 }
 
-void PopUpWindow::setTranslationText(const QString& text, const QString& language)
+void PopUpWindow::setResultText(const QString& text, const QString& language)
 {
-    translationTextWidget->setText(text);
-    translationLang = language;
+    resultTextWidget->setText(text);
+    resultLang = language;
 }
 
 

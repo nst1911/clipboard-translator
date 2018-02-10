@@ -39,7 +39,7 @@ void MainClass::translate()
 
     // API requires the "lang1-lang2" format, where lang1 is the source language,
     // lang2 - the translation language
-    QString language = settingsDialog->getShortSourceLang() + "-" + settingsDialog->getShortTranslationLang();
+    QString language = settingsDialog->getShortSourceLang() + "-" + settingsDialog->getShortResultLang();
 
     downloader->dataRequest("https://translate.yandex.net/api/v1.5/tr.json/translate?"
                             "key="   + APIkey +
@@ -53,7 +53,7 @@ void MainClass::translate()
 
         popUp->setDuration(settingsDialog->getPopUpDuration()*1000);
         popUp->setSourceText(clipboardText, settingsDialog->getSourceLang());
-        popUp->setTranslationText(translatedText, settingsDialog->getTranslationLang());
+        popUp->setResultText(translatedText, settingsDialog->getTranslationLang());
         popUp->show();
     });
 }

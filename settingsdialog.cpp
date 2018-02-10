@@ -40,9 +40,9 @@ void SettingsDialog::createLangGroupBox() {
     sourceLangBox = new QComboBox(langGBox);
     sourceLangBox->setEditable(true);
 
-    QLabel* translationLangLabel = new QLabel(tr("Translation language:"),langGBox);
-    translationLangBox = new QComboBox(langGBox);
-    translationLangBox->setEditable(true);
+    QLabel* translationLangLabel = new QLabel(tr("Result language:"),langGBox);
+    resultLangBox = new QComboBox(langGBox);
+    resultLangBox->setEditable(true);
 
     QLabel* translatorLinkLabel =
             new QLabel(tr("Suggested languages are provided <br>by <a href=\"https://translate.yandex.ru/\">Yandex.Translator</a><br>"),langGBox);
@@ -55,7 +55,7 @@ void SettingsDialog::createLangGroupBox() {
     layout->addWidget(sourceLangLabel,2,0);
     layout->addWidget(sourceLangBox, 2,1);
     layout->addWidget(translationLangLabel,3,0);
-    layout->addWidget(translationLangBox, 3,1);
+    layout->addWidget(resultLangBox, 3,1);
     langGBox->setLayout(layout);
 
     /* Downloading list of available languages from translating service */
@@ -73,7 +73,7 @@ void SettingsDialog::createLangGroupBox() {
             /* The first argument (text) is the full language name ("English"),
             /* the second (userData) is the short one ("en") */
             sourceLangBox->addItem(langList.value(key).toString(), key);
-            translationLangBox->addItem(langList.value(key).toString(), key);
+            resultLangBox->addItem(langList.value(key).toString(), key);
         }
     });
 

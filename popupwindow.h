@@ -1,4 +1,4 @@
-#ifndef POPUPWINDOW_H
+﻿#ifndef POPUPWINDOW_H
 #define POPUPWINDOW_H
 
 #include <QWidget>
@@ -23,7 +23,7 @@ public:
     virtual ~PopUpWindow();
 
     void setSourceText(const QString& text, const QString& language);
-    void setTranslationText(const QString& text, const QString& language);
+    void setResultText(const QString& text, const QString& language);
     inline void setDuration(int duration) { m_duration = duration;}
 
 public slots:
@@ -34,10 +34,10 @@ private slots:
 
 private:   
     QTextEdit* sourceTextWidget;
-    QTextEdit* translationTextWidget;
+    QTextEdit* resultTextWidget;
 
     QLabel* languagesLabel;
-    QString sourceLang, translationLang;
+    QString sourceLang, resultLang;
 
     QImage* image;
 

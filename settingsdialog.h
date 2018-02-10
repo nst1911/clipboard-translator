@@ -27,10 +27,10 @@ public:
     inline QKeySequence getCurrentKeySequence()   const { return keySequence; }
     // Short type of language word (for example, "en")
     inline QString      getShortSourceLang()      const { return sourceLangBox->currentData().toString(); }
-    inline QString      getShortTranslationLang() const { return translationLangBox->currentData().toString(); }
+    inline QString      getShortResultLang()      const { return resultLangBox->currentData().toString(); }
     // Full language word (for example, "English")
     inline QString      getSourceLang()           const { return sourceLangBox->currentText(); }
-    inline QString      getTranslationLang()      const { return translationLangBox->currentText(); }
+    inline QString      getTranslationLang()      const { return resultLangBox->currentText(); }
     inline int          getPopUpDuration()        const { return popUpDuration->value(); }
 
 signals:
@@ -47,7 +47,7 @@ private:
     inline void createKeySequenceGroupBox();
     inline void createOtherSettingsGBox();
 
-    QComboBox*  translationLangBox;
+    QComboBox*  resultLangBox;
     QComboBox*  sourceLangBox;
 
     QSpinBox*   popUpDuration;
