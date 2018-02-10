@@ -2,6 +2,8 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QtGui>
+#include <QApplication>
+#include <QDesktopWidget>
 
 SettingsDialog::SettingsDialog(QKeySequence defaultKeySeq,
                                const QString& apiKey,
@@ -12,6 +14,7 @@ SettingsDialog::SettingsDialog(QKeySequence defaultKeySeq,
 {
     createLangGroupBox();
     createKeySequenceGroupBox();
+    createOtherSettingsGBox();
 
     QPushButton* closeButton = new QPushButton(tr("&Close"),this);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
@@ -19,13 +22,15 @@ SettingsDialog::SettingsDialog(QKeySequence defaultKeySeq,
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->addWidget(langGBox);
     layout->addWidget(keySequenceGBox);
+    layout->addWidget(otherSettingsGBox);
     layout->addWidget(closeButton);
     layout->setSizeConstraint(QLayout::SetFixedSize);
     setLayout(layout);
 
     setWindowTitle("Settings");
 
-    resize(300,400);
+    QRect availableGeometry = QApplication::desktop()->availableGeometry();
+    resize(availableGeometry.width()/4, availableGeometry.height()/1.5);
 }
 
 void SettingsDialog::createLangGroupBox() {
@@ -53,6 +58,8 @@ void SettingsDialog::createLangGroupBox() {
     layout->addWidget(translationLangBox, 3,1);
     langGBox->setLayout(layout);
 
+    /* Downloading list of available languages from translating service */
+
     downloader = new TextFileDownloader;
     downloader->dataRequest("https://translate.yandex.net/api/v1.5/tr.json/getLangs"
                             "?key=" + APIkey +
@@ -63,8 +70,10 @@ void SettingsDialog::createLangGroupBox() {
         langList = document.object().value("langs").toObject();
 
         foreach (const QString& key, langList.keys()) {
+            /* The first argument (text) is the full language name ("English"),
+            /* the second (userData) is the short one ("en") */
             sourceLangBox->addItem(langList.value(key).toString(), key);
-            translationLangBox->addItem(langList.value(key).toString(),key);
+            translationLangBox->addItem(langList.value(key).toString(), key);
         }
     });
 
@@ -80,6 +89,7 @@ void SettingsDialog::createKeySequenceGroupBox() {
 
     QPushButton* setButton = new QPushButton(tr("&Enter new shortcut"),this);
 
+    /* This label is appeared after clicking on the button */
     labelAfterButton = new QLabel(tr("Press any combination of keys (Ctrl+Shift+D, Alt+5, ...)\n"
                           "Several combinations may not work on your operation system."),this);
     labelAfterButton->setVisible(false);
@@ -94,6 +104,20 @@ void SettingsDialog::createKeySequenceGroupBox() {
     layout->addWidget(setButton,1,1);
     layout->addWidget(labelAfterButton,2,0,1,2);
     keySequenceGBox->setLayout(layout);
+}
+
+void SettingsDialog::createOtherSettingsGBox() {
+    otherSettingsGBox = new QGroupBox("Other settings",this);
+
+    QLabel* popUpDurationLabel = new QLabel("Pop-up notification duration:",this);
+    popUpDuration = new QSpinBox(this);
+    popUpDuration->setValue(4);
+    popUpDuration->setMinimum(1);
+
+    QGridLayout* layout = new QGridLayout(this);
+    layout->addWidget(popUpDurationLabel,0,0);
+    layout->addWidget(popUpDuration,0,1);
+    otherSettingsGBox->setLayout(layout);
 }
 
 void SettingsDialog::keyPressEvent(QKeyEvent* keyEvent) {
@@ -124,34 +148,8 @@ void SettingsDialog::keyPressEvent(QKeyEvent* keyEvent) {
         keySequenceField->setText(keySequence.toString());
 
         isClicked = false;
-
         labelAfterButton->setVisible(false);
 
         emit keySequenceChanged();
     }
-}
-
-QKeySequence SettingsDialog::getCurrentKeySequence() const
-{
-    return keySequence;
-}
-
-QString SettingsDialog::getShortSourceLang() const
-{
-    return sourceLangBox->currentData().toString();
-}
-
-QString SettingsDialog::getShortTranslationLang() const
-{
-    return translationLangBox->currentData().toString();
-}
-
-QString SettingsDialog::getSourceLang() const
-{
-    return sourceLangBox->currentText();
-}
-
-QString SettingsDialog::getTranslationLang() const
-{
-    return translationLangBox->currentText();
 }

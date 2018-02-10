@@ -12,14 +12,11 @@ class TextFileDownloader : public QObject
 public:
     explicit TextFileDownloader(QObject *parent = nullptr);
 
-    void    dataRequest(const QString& url); // getting data request initialization
-    QString getData() const;
+    void dataRequest(const QString& url);
+    inline QString getData() const { return data; }
 
 signals:
     void readyToRead();
-
-private slots:
-    void result(QNetworkReply*); // processing received data
 
 private:
     QNetworkAccessManager* networkManager;

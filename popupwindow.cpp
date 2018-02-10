@@ -5,29 +5,30 @@
 #include <QImage>
 #include <QVBoxLayout>
 
-PopUpWindow::PopUpWindow(QWidget *parent) : QFrame(parent)
+PopUpWindow::PopUpWindow(int duration, QWidget *parent)
+    : QFrame(parent),
+      m_duration(duration)
 {
-    setWindowFlags(Qt::FramelessWindowHint |
-                   Qt::Tool |
-                   Qt::WindowStaysOnTopHint);
-    setAttribute(Qt::WA_ShowWithoutActivating);
+    /* Widget initialization */
 
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
+    setAttribute(Qt::WA_ShowWithoutActivating);
     setFrameStyle(QFrame::Box | QFrame::Raised);
 
     QRect availableGeometry = QApplication::desktop()->availableGeometry();
     resize(availableGeometry.width()/6, availableGeometry.height()/3);
+    // Moving the window in the right bottom corner
     setGeometry(availableGeometry.width() - width() + availableGeometry.x(),
                 availableGeometry.height() - height() + availableGeometry.y(),
                 width(),
                 height());
 
-    sourceText      = new QTextEdit(this);
-    translationText = new QTextEdit(this);
-
-    sourceText->setReadOnly(true);
-    sourceText->setFrameStyle(QFrame::Box | QFrame::Raised);
-    translationText->setReadOnly(true);
-    translationText->setFrameStyle(QFrame::Box | QFrame::Raised);
+    sourceTextWidget      = new QTextEdit(this);
+    sourceTextWidget->setReadOnly(true);
+    sourceTextWidget->setFrameStyle(QFrame::Box | QFrame::Raised);
+    translationTextWidget = new QTextEdit(this);
+    translationTextWidget->setReadOnly(true);
+    translationTextWidget->setFrameStyle(QFrame::Box | QFrame::Raised);
 
     QLabel* arrowImage = new QLabel(this);
     image = new QImage(":/arrow.png");
@@ -45,16 +46,21 @@ PopUpWindow::PopUpWindow(QWidget *parent) : QFrame(parent)
 
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->addWidget(languagesLabel,0, Qt::AlignCenter);
-    layout->addWidget(sourceText);
+    layout->addWidget(sourceTextWidget);
     layout->addWidget(arrowImage,0,Qt::AlignCenter);
-    layout->addWidget(translationText);
+    layout->addWidget(translationTextWidget);
     layout->addWidget(yandexLabel);
+
+    /* Animation initialization */
 
     animation.setTargetObject(this);
     animation.setPropertyName("opacity");
-    connect(&animation, &QAbstractAnimation::finished, this, &PopUpWindow::hide);
+    connect(&animation, &QAbstractAnimation::finished, this, [this]() {
+        if (getOpacity() == 0.0)
+            QWidget::hide();
+    });
 
-    timer = new QTimer;
+    timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &PopUpWindow::hideAnimation);
 }
 
@@ -64,33 +70,30 @@ PopUpWindow::~PopUpWindow() {
 
 void PopUpWindow::show()
 {
+    QWidget::show();
+
     languagesLabel->setText("<b>" + sourceLang + "</b> -> <b>" + translationLang + "</b>");
+
     setWindowOpacity(0.0);
 
-    animation.setDuration(150);
+    animation.setDuration(500);
     animation.setStartValue(0.0);
     animation.setEndValue(1.0);
 
-    QWidget::show();
-
     animation.start();
 
-    timer->start(4000);
+    timer->start(m_duration);
 }
 
 void PopUpWindow::hideAnimation() {
 
     timer->stop();
+
     animation.setDuration(500);
     animation.setStartValue(1.0);
     animation.setEndValue(0.0);
-    animation.start();
-}
 
-void PopUpWindow::hide()
-{
-    if (getOpacity() == 0.0)
-        QWidget::hide();
+    animation.start();
 }
 
 void PopUpWindow::setOpacity(float op)
@@ -106,14 +109,14 @@ float PopUpWindow::getOpacity() const
 
 void PopUpWindow::setSourceText(const QString& text, const QString& language)
 {
-    sourceText->setText(text);
+    sourceTextWidget->setText(text);
     sourceLang = language;
 
 }
 
 void PopUpWindow::setTranslationText(const QString& text, const QString& language)
 {
-    translationText->setText(text);
+    translationTextWidget->setText(text);
     translationLang = language;
 }
 
