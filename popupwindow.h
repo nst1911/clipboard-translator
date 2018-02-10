@@ -29,6 +29,9 @@ public:
 public slots:
     void show();
 
+protected:
+    bool event(QEvent* e) override;
+
 private slots:
     void hideAnimation();
 

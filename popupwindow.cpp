@@ -4,6 +4,7 @@
 #include <QDesktopWidget>
 #include <QImage>
 #include <QVBoxLayout>
+#include <QDebug>
 
 PopUpWindow::PopUpWindow(int duration, QWidget *parent)
     : QFrame(parent),
@@ -14,6 +15,8 @@ PopUpWindow::PopUpWindow(int duration, QWidget *parent)
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_ShowWithoutActivating);
     setFrameStyle(QFrame::Box | QFrame::Raised);
+
+    setMouseTracking(true);
 
     QRect availableGeometry = QApplication::desktop()->availableGeometry();
     resize(availableGeometry.width()/6, availableGeometry.height()/3);
@@ -118,6 +121,16 @@ void PopUpWindow::setResultText(const QString& text, const QString& language)
 {
     resultTextWidget->setText(text);
     resultLang = language;
+}
+
+bool PopUpWindow::event(QEvent* e)
+{
+    if (e->type() == QEvent::Enter)
+        timer->stop();
+    if (e->type()==QEvent::Leave)
+        timer->start(m_duration/3);
+
+    return QWidget::event(e);
 }
 
 
