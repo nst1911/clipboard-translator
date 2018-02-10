@@ -7,6 +7,7 @@
 #include <QMenu>
 
 #include "settingsdialog.h"
+#include "popupwindow.h"
 #include "textfiledownloader.h"
 
 class MainClass : public QWidget
@@ -31,6 +32,8 @@ private:
     SettingsDialog* settingsDialog;
     QDialog*        aboutDialog;
     void            createAboutDialog();
+
+    PopUpWindow* popUp;
 
     QHotkey hotkey;
 

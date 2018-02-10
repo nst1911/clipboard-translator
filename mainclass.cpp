@@ -15,6 +15,8 @@ MainClass::MainClass()
 
     downloader = new TextFileDownloader(this);
 
+    popUp = new PopUpWindow;
+
     connect(settings, &QAction::triggered, settingsDialog, &QDialog::open);
     connect(about, &QAction::triggered, aboutDialog, &QDialog::open);
     connect(quit, &QAction::triggered, qApp, &QGuiApplication::quit);
@@ -40,15 +42,13 @@ void MainClass::translate()
                             "&text=" + clipboardText +
                             "&lang=" + language);
 
-    connect(downloader, &TextFileDownloader::readyToRead, this, [this,clipboardText,language]() {
+    connect(downloader, &TextFileDownloader::readyToRead, this, [this,clipboardText]() {
         QJsonDocument document = QJsonDocument::fromJson(downloader->getData().toUtf8());
         QString translatedText = document.object().value("text").toArray().at(0).toString();
-        trayIcon->showMessage("Окно перевода",
-                    "[Исходный текст]\n" + clipboardText  +
-                    "\n\n[Переведенный текст]\n" + translatedText +
-                    "\n\n[Переведено сервисом «Яндекс.Переводчик» http://translate.yandex.ru/]",
-                    QSystemTrayIcon::NoIcon,
-                    4000);
+
+        popUp->setSourceText(clipboardText, settingsDialog->getSourceLang());
+        popUp->setTranslationText(translatedText, settingsDialog->getTranslationLang());
+        popUp->show();
     });
 }
 

@@ -29,12 +29,14 @@ SOURCES += \
     main.cpp \
     mainclass.cpp \
     settingsdialog.cpp \
-    textfiledownloader.cpp
+    textfiledownloader.cpp \
+    popupwindow.cpp
 
 HEADERS += \
     mainclass.h \
     settingsdialog.h \
-    textfiledownloader.h
+    textfiledownloader.h \
+    popupwindow.h
 
 RESOURCES += \
     resources.qrc
