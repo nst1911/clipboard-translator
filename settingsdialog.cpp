@@ -1,11 +1,14 @@
 #include "settingsdialog.h"
 #include <QGridLayout>
+#include <QVBoxLayout>
 #include <QtGui>
 
-// Посмотреть пример SystemTrayIcon с доков Qt
-
-SettingsDialog::SettingsDialog(QKeySequence keySeq, QWidget* parent)
-    : QDialog(parent), keySequence(keySeq)
+SettingsDialog::SettingsDialog(QKeySequence defaultKeySeq,
+                               const QString& apiKey,
+                               QWidget* parent)
+    : QDialog(parent),
+      APIkey(apiKey),
+      keySequence(defaultKeySeq)
 {
     createLangGroupBox();
     createKeySequenceGroupBox();
@@ -13,11 +16,10 @@ SettingsDialog::SettingsDialog(QKeySequence keySeq, QWidget* parent)
     QPushButton* closeButton = new QPushButton(tr("&Close"),this);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
 
-    QGridLayout* layout = new QGridLayout(this);
-
-    layout->addWidget(langGBox,0,0);
-    layout->addWidget(keySequenceGBox,0,1,1,1,Qt::AlignTop);
-    layout->addWidget(closeButton,1,1);
+    QVBoxLayout* layout = new QVBoxLayout(this);
+    layout->addWidget(langGBox);
+    layout->addWidget(keySequenceGBox);
+    layout->addWidget(closeButton);
     layout->setSizeConstraint(QLayout::SetFixedSize);
     setLayout(layout);
 
@@ -49,8 +51,23 @@ void SettingsDialog::createLangGroupBox() {
     layout->addWidget(sourceLangBox, 2,1);
     layout->addWidget(translationLangLabel,3,0);
     layout->addWidget(translationLangBox, 3,1);
-
     langGBox->setLayout(layout);
+
+    downloader = new TextFileDownloader;
+    downloader->dataRequest("https://translate.yandex.net/api/v1.5/tr.json/getLangs"
+                            "?key=" + APIkey +
+                            "&ui=en");
+
+    connect(downloader, &TextFileDownloader::readyToRead, this, [this]() {
+        document = QJsonDocument::fromJson(downloader->getData().toUtf8());
+        langList = document.object().value("langs").toObject();
+
+        foreach (const QString& key, langList.keys()) {
+            sourceLangBox->addItem(langList.value(key).toString(), key);
+            translationLangBox->addItem(langList.value(key).toString(),key);
+        }
+    });
+
 }
 
 void SettingsDialog::createKeySequenceGroupBox() {
@@ -76,7 +93,6 @@ void SettingsDialog::createKeySequenceGroupBox() {
     layout->addWidget(keySequenceField,0,1);
     layout->addWidget(setButton,1,1);
     layout->addWidget(labelAfterButton,2,0,1,2);
-    layout->setSizeConstraint(QLayout::SetFixedSize);
     keySequenceGBox->setLayout(layout);
 }
 
@@ -113,5 +129,29 @@ void SettingsDialog::keyPressEvent(QKeyEvent* keyEvent) {
 
         emit keySequenceChanged();
     }
+}
 
+QKeySequence SettingsDialog::getCurrentKeySequence() const
+{
+    return keySequence;
+}
+
+QString SettingsDialog::getShortSourceLang() const
+{
+    return sourceLangBox->currentData().toString();
+}
+
+QString SettingsDialog::getShortTranslationLang() const
+{
+    return translationLangBox->currentData().toString();
+}
+
+QString SettingsDialog::getSourceLang() const
+{
+    return sourceLangBox->currentText();
+}
+
+QString SettingsDialog::getTranslationLang() const
+{
+    return translationLangBox->currentText();
 }

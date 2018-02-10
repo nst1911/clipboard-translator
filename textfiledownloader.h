@@ -11,10 +11,9 @@ class TextFileDownloader : public QObject
 
 public:
     explicit TextFileDownloader(QObject *parent = nullptr);
-    void dataRequest(const QString& url); // getting data request initialization
-    virtual QString getData() const;
 
-    QNetworkReply::NetworkError getErrorFlag() const;
+    void    dataRequest(const QString& url); // getting data request initialization
+    QString getData() const;
 
 signals:
     void readyToRead();
@@ -25,21 +24,6 @@ private slots:
 private:
     QNetworkAccessManager* networkManager;
     QString data;
-    QNetworkReply::NetworkError errorFlag;
 };
-
-
-//class TranslationDownloader : public TextFileDownloader {
-//    Q_OBJECT
-
-//public:
-//    explicit TranslationDownloader(QObject *parent = nullptr);
-
-//    void dataRequest(const QString& sourceText, const QString& language);
-//    QString getData() const override;
-
-//    QString APIkey;
-//    void setAPIkey(const QString &value);
-//};
 
 #endif // TEXTFILEDOWNLOADER_H

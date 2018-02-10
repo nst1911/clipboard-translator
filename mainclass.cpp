@@ -1,28 +1,37 @@
 #include "mainclass.h"
 #include <QtGui>
 #include <QJsonDocument>
+#include <QMetaObject>
+#include <QVBoxLayout>
 
 MainClass::MainClass()
-    : APIkey("trnsl.1.1.20180131T210131Z.fd062be4e6d5a226.f6c8a6a0a0eb3ba81b33c2e7027dab5a19e0eb9d"),
-      language("en-ru")
+    : APIkey("trnsl.1.1.20180131T210131Z.fd062be4e6d5a226.f6c8a6a0a0eb3ba81b33c2e7027dab5a19e0eb9d")
 {
-    trayIcon = new TrayIcon(this);
-    settingsDialog = new SettingsDialog(QKeySequence(tr("Ctrl+1")),this);
-    hotkey.setShortcut(settingsDialog->getKeySequence(),true);
+    createAboutDialog();
+    settingsDialog = new SettingsDialog(QKeySequence("Ctrl+1"),APIkey,this);
+    createTrayIcon();
+
+    hotkey.setShortcut(settingsDialog->getCurrentKeySequence(),true);
+
     downloader = new TextFileDownloader(this);
 
-    connect(trayIcon->settings, &QAction::triggered, settingsDialog, &QDialog::open);
-    connect(trayIcon->quit, &QAction::triggered, qApp, &QGuiApplication::quit);
-    connect(settingsDialog, &SettingsDialog::keySequenceChanged, this, [&]() { hotkey.setShortcut(settingsDialog->getKeySequence(),true); });
+    connect(settings, &QAction::triggered, settingsDialog, &QDialog::open);
+    connect(about, &QAction::triggered, aboutDialog, &QDialog::open);
+    connect(quit, &QAction::triggered, qApp, &QGuiApplication::quit);
+
+    connect(settingsDialog, &SettingsDialog::keySequenceChanged, this, [&]() { hotkey.setShortcut(settingsDialog->getCurrentKeySequence(),true); });
     connect(&hotkey, &QHotkey::activated, this, &MainClass::translate);
 }
 
-void MainClass::setVisible(bool isVisible) {
+void MainClass::setVisible(bool isVisible)
+{
     trayIcon->setVisible(isVisible);
 }
 
-void MainClass::translate() {
-    const QClipboard *clipboard = qApp->clipboard();
+void MainClass::translate()
+{
+    QString language = settingsDialog->getShortSourceLang() + "-" + settingsDialog->getShortTranslationLang();
+    QClipboard *clipboard = qApp->clipboard();
 
     QString clipboardText(clipboard->text());
 
@@ -31,7 +40,7 @@ void MainClass::translate() {
                             "&text=" + clipboardText +
                             "&lang=" + language);
 
-    connect(downloader, &TextFileDownloader::readyToRead, this, [this,clipboardText]() {
+    connect(downloader, &TextFileDownloader::readyToRead, this, [this,clipboardText,language]() {
         QJsonDocument document = QJsonDocument::fromJson(downloader->getData().toUtf8());
         QString translatedText = document.object().value("text").toArray().at(0).toString();
         trayIcon->showMessage("Окно перевода",
@@ -41,4 +50,44 @@ void MainClass::translate() {
                     QSystemTrayIcon::NoIcon,
                     4000);
     });
+}
+
+void MainClass::createTrayIcon()
+{
+    trayIcon = new QSystemTrayIcon(this);
+
+    settings = new QAction(tr("&Settings"),this);
+    about = new QAction(tr("&About"),this);
+    quit = new QAction(tr("&Quit"),this);
+
+    trayIcon->setToolTip("Clipboard Translator\n" + tr("Press to open the context menu"));
+
+    trayIconMenu = new QMenu();
+    trayIconMenu->addAction(settings);
+    trayIconMenu->addAction(about);
+    trayIconMenu->addSeparator();
+    trayIconMenu->addAction(quit);
+
+    trayIcon->setContextMenu(trayIconMenu);
+    trayIcon->setIcon(QIcon(":/icon.png"));
+}
+
+void MainClass::createAboutDialog() {
+    aboutDialog = new QDialog();
+    QLabel* text = new QLabel(aboutDialog);
+    text->setTextFormat(Qt::RichText);
+    text->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    text->setOpenExternalLinks(true);
+    text->setText(tr("<h2><div align=center>Clipboard Translator</div></h2><br>"
+                     "<a href=\"https://github.com/ntrsBIG/clipboard-translator\">https://github.com/ntrsBIG/clipboard-translator</a><br><br>"
+                     "<b>Clipboard Translator</b> is licensed under the <b>BSD 3-Clause License</b>.<br><br>"
+                     "<b>Used open source APIs and libraries:</b> "
+                        "<a href=\"https://tech.yandex.com/translate/\">Yandex.Translator API</a>, "
+                        "<a href=\"https://github.com/Skycoder42/QHotkey\">QHotkey</a><br><br>"
+                     "<div align=center>Copyright (c) 2018, ntrsBIG. All rights reserved.</div>"));
+    QVBoxLayout* layout = new QVBoxLayout(aboutDialog);
+    layout->addWidget(text);
+    layout->setSizeConstraint(QLayout::SetFixedSize);
+    aboutDialog->setLayout(layout);
+    aboutDialog->setWindowTitle(tr("About"));
 }

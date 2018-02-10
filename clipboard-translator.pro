@@ -8,7 +8,7 @@ QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = clipboard_translator
+TARGET = clipboard-translator
 TEMPLATE = app
 
 include(vendor/vendor.pri)
@@ -27,13 +27,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
-    trayicon.cpp \
     mainclass.cpp \
     settingsdialog.cpp \
     textfiledownloader.cpp
 
 HEADERS += \
-    trayicon.h \
     mainclass.h \
     settingsdialog.h \
     textfiledownloader.h

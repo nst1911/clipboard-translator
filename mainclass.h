@@ -1,11 +1,13 @@
 #ifndef MAINCLASS_H
 #define MAINCLASS_H
 
-#include <QObject>
-#include "trayicon.h"
+#include <QWidget>
+#include <QHotkey>
+#include <QSystemTrayIcon>
+#include <QMenu>
+
 #include "settingsdialog.h"
 #include "textfiledownloader.h"
-#include <QHotkey>
 
 class MainClass : public QWidget
 {
@@ -19,11 +21,20 @@ public slots:
     void translate();
 
 private:
-    TrayIcon* trayIcon;
+    QSystemTrayIcon* trayIcon;
+    QMenu*   trayIconMenu;
+    QAction* settings;
+    QAction* about;
+    QAction* quit;
+    void     createTrayIcon();
+
     SettingsDialog* settingsDialog;
+    QDialog*        aboutDialog;
+    void            createAboutDialog();
+
     QHotkey hotkey;
 
-    QString APIkey, language;
+    QString APIkey;
     TextFileDownloader* downloader;
 };
 
