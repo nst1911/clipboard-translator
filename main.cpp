@@ -2,8 +2,6 @@
 #include <QApplication>
 #include "mainclass.h"
 
-#include "popupwindow.h"
-
 int main(int argc, char *argv[]) {
     Q_INIT_RESOURCE(resources);
 
@@ -13,11 +11,6 @@ int main(int argc, char *argv[]) {
 
     MainClass mainClass;
     mainClass.show();
-
-//    PopUpWindow* p = new PopUpWindow();
-//    p->setTranslationText("text","Russian");
-//    p->setSourceText("text","English");
-//    p->show();
 
     return app.exec();
 }

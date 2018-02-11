@@ -38,6 +38,7 @@ private:
     QHotkey hotkey;
 
     QString APIkey; // API key of translating service
+    QString dataFileName;
     TextFileDownloader* downloader;
 };
 

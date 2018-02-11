@@ -5,56 +5,36 @@
 #include <QVBoxLayout>
 
 MainClass::MainClass()
-    : APIkey("trnsl.1.1.20180131T210131Z.fd062be4e6d5a226.f6c8a6a0a0eb3ba81b33c2e7027dab5a19e0eb9d")
-{
-    settingsDialog = new SettingsDialog(QKeySequence("Ctrl+1"), APIkey, this);
-    createAboutDialog();
-    createTrayIcon();
-    popUp = new PopUpWindow(4000,this);
+    : APIkey("trnsl.1.1.20180131T210131Z.fd062be4e6d5a226.f6c8a6a0a0eb3ba81b33c2e7027dab5a19e0eb9d"),
+      dataFileName("settings.dat")
 
-    // Set default (Ctrl+1) hotkey for translating
-    hotkey.setShortcut(settingsDialog->getCurrentKeySequence(),true);
+{
+    createTrayIcon();
+    createAboutDialog();
+    settingsDialog = new SettingsDialog(dataFileName, APIkey, this);
+
+    /* Tray icon menu actions */
+    connect(settings, &QAction::triggered, settingsDialog, &QDialog::open);
+    connect(about,    &QAction::triggered, aboutDialog,    &QDialog::open);
+    connect(quit,     &QAction::triggered, qApp,           &QGuiApplication::quit);
 
     downloader = new TextFileDownloader(this);
 
-    connect(settings, &QAction::triggered, settingsDialog, &QDialog::open);
-    connect(about, &QAction::triggered, aboutDialog, &QDialog::open);
-    connect(quit, &QAction::triggered, qApp, &QGuiApplication::quit);
+    /* Continue initializing other members after settings values are recieved
+     * from the settings file */
+    connect(settingsDialog, &SettingsDialog::deserialized, this, [&]() {
+        popUp = new PopUpWindow(settingsDialog->getPopUpDuration(),this);
 
-    connect(settingsDialog, &SettingsDialog::keySequenceChanged, this, [this]() {
-        hotkey.setShortcut(settingsDialog->getCurrentKeySequence(),true);
-    });
-    connect(&hotkey, &QHotkey::activated, this, &MainClass::translate);
-}
+        connect(qApp, &QGuiApplication::aboutToQuit, this, [&]() {
+            settingsDialog->serialize();
+        });
 
-void MainClass::setVisible(bool isVisible)
-{
-    trayIcon->setVisible(isVisible);
-}
+        hotkey.setShortcut(settingsDialog->getCurrentKeySequence(),true); // by default
 
-void MainClass::translate()
-{
-    QClipboard *clipboard = qApp->clipboard();
-    QString clipboardText(clipboard->text());
-
-    // API requires the "lang1-lang2" format, where lang1 is the source language,
-    // lang2 - the translation language
-    QString language = settingsDialog->getShortSourceLang() + "-" + settingsDialog->getShortResultLang();
-
-    downloader->dataRequest("https://translate.yandex.net/api/v1.5/tr.json/translate?"
-                            "key="   + APIkey +
-                            "&text=" + clipboardText +
-                            "&lang=" + language);
-
-    connect(downloader, &TextFileDownloader::readyToRead, this, [this,clipboardText]() {
-        /* Parsing the result */
-        QJsonDocument document = QJsonDocument::fromJson(downloader->getData().toUtf8());
-        QString translatedText = document.object().value("text").toArray().at(0).toString();
-
-        popUp->setDuration(settingsDialog->getPopUpDuration()*1000);
-        popUp->setSourceText(clipboardText, settingsDialog->getSourceLang());
-        popUp->setResultText(translatedText, settingsDialog->getTranslationLang());
-        popUp->show();
+        connect(settingsDialog->keySequenceField, &QLineEdit::textChanged, this, [&]() {
+            hotkey.setShortcut(settingsDialog->getCurrentKeySequence(),true);
+        });
+        connect(&hotkey, &QHotkey::activated, this, &MainClass::translate);
     });
 }
 
@@ -63,8 +43,8 @@ void MainClass::createTrayIcon()
     trayIcon = new QSystemTrayIcon(this);
 
     settings = new QAction(tr("&Settings"),this);
-    about = new QAction(tr("&About"),this);
-    quit = new QAction(tr("&Quit"),this);
+    about    = new QAction(tr("&About"),this);
+    quit     = new QAction(tr("&Quit"),this);
 
     trayIcon->setToolTip("Clipboard Translator\n" + tr("Press to open the context menu"));
 
@@ -98,4 +78,36 @@ void MainClass::createAboutDialog() {
     layout->addWidget(text);
     layout->setSizeConstraint(QLayout::SetFixedSize);
     aboutDialog->setLayout(layout);
+}
+
+
+void MainClass::setVisible(bool isVisible)
+{
+    /* The main widget isn't visible, only tray icon */
+    trayIcon->setVisible(isVisible);
+}
+
+void MainClass::translate()
+{
+    QClipboard *clipboard = qApp->clipboard();
+    QString clipboardText(clipboard->text());
+
+    // "en-ru" format (for API)
+    QString language = settingsDialog->getShortSourceLang() + "-" + settingsDialog->getShortResultLang();
+
+    downloader->dataRequest("https://translate.yandex.net/api/v1.5/tr.json/translate?"
+                            "key="   + APIkey +
+                            "&text=" + clipboardText +
+                            "&lang=" + language);
+
+    connect(downloader, &TextFileDownloader::readyToRead, this, [this,clipboardText]() {
+        /* Parsing the result */
+        QJsonDocument document = QJsonDocument::fromJson(downloader->getData().toUtf8());
+        QString translatedText = document.object().value("text").toArray().at(0).toString();
+
+        popUp->setDuration(settingsDialog->getPopUpDuration()*1000);
+        popUp->setSourceText(clipboardText, settingsDialog->getSourceLang());
+        popUp->setResultText(translatedText, settingsDialog->getTranslationLang());
+        popUp->show();
+    });
 }

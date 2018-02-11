@@ -19,12 +19,14 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
+    friend class MainClass; // getting access to keySequenceField
+
     // Key sequence for translating; API key of translating service
-    SettingsDialog(QKeySequence defaultKeySeq,
+    SettingsDialog(const QString& fileName,
                    const QString& apiKey,
                    QWidget* parent = nullptr);
 
-    inline QKeySequence getCurrentKeySequence()   const { return keySequence; }
+    inline QKeySequence getCurrentKeySequence()   const { return QKeySequence(keySequenceField->text()); }
     // Short type of language word (for example, "en")
     inline QString      getShortSourceLang()      const { return sourceLangBox->currentData().toString(); }
     inline QString      getShortResultLang()      const { return resultLangBox->currentData().toString(); }
@@ -33,8 +35,14 @@ public:
     inline QString      getTranslationLang()      const { return resultLangBox->currentText(); }
     inline int          getPopUpDuration()        const { return popUpDuration->value(); }
 
+public slots:
+    void serialize();
+    void deserialize();
+    void setDefaultValues();
+
 signals:
-    void keySequenceChanged();
+    void readyToDeserialize();
+    void deserialized();
 
 protected:
     void keyPressEvent(QKeyEvent*) override;
@@ -58,12 +66,11 @@ private:
     TextFileDownloader* downloader;
     QString             APIkey;
 
+    QString serializationFileName;
+
     QLineEdit*   keySequenceField;
-    QKeySequence keySequence;
-    bool         isClicked;
+    bool         isClicked; // if button setting key sequence isn't clicked, keyPressEvent works as it does in the base class
     QLabel*      labelAfterButton;
-
-
 };
 
 #endif // SETTINGSDIALOG_H

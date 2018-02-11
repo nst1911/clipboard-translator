@@ -26,9 +26,10 @@ PopUpWindow::PopUpWindow(int duration, QWidget *parent)
                 width(),
                 height());
 
-    sourceTextWidget      = new QTextEdit(this);
+    sourceTextWidget = new QTextEdit(this);
     sourceTextWidget->setReadOnly(true);
     sourceTextWidget->setFrameStyle(QFrame::Box | QFrame::Raised);
+
     resultTextWidget = new QTextEdit(this);
     resultTextWidget->setReadOnly(true);
     resultTextWidget->setFrameStyle(QFrame::Box | QFrame::Raised);
@@ -58,7 +59,7 @@ PopUpWindow::PopUpWindow(int duration, QWidget *parent)
 
     animation.setTargetObject(this);
     animation.setPropertyName("opacity");
-    connect(&animation, &QAbstractAnimation::finished, this, [this]() {
+    connect(&animation, &QAbstractAnimation::finished, this, [&]() {
         if (getOpacity() == 0.0)
             QWidget::hide();
     });
@@ -75,6 +76,7 @@ void PopUpWindow::show()
 {
     QWidget::show();
 
+    /* Update the label with languages */
     languagesLabel->setText("<b>" + sourceLang + "</b> -> <b>" + resultLang + "</b>");
 
     setWindowOpacity(0.0);
@@ -114,7 +116,6 @@ void PopUpWindow::setSourceText(const QString& text, const QString& language)
 {
     sourceTextWidget->setText(text);
     sourceLang = language;
-
 }
 
 void PopUpWindow::setResultText(const QString& text, const QString& language)
@@ -123,12 +124,11 @@ void PopUpWindow::setResultText(const QString& text, const QString& language)
     resultLang = language;
 }
 
+/* Hovering on the widget stops hiding the widget */
 bool PopUpWindow::event(QEvent* e)
 {
-    if (e->type() == QEvent::Enter)
-        timer->stop();
-    if (e->type()==QEvent::Leave)
-        timer->start(m_duration/3);
+    if (e->type() == QEvent::Enter) timer->stop();
+    if (e->type() == QEvent::Leave) timer->start(m_duration/3);
 
     return QWidget::event(e);
 }

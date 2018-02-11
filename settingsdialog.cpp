@@ -3,15 +3,26 @@
 #include <QVBoxLayout>
 #include <QtGui>
 #include <QApplication>
+#include <QFileInfo>
 #include <QDesktopWidget>
+#include <QDebug>
+#include <QMessageBox>
 
-SettingsDialog::SettingsDialog(QKeySequence defaultKeySeq,
+SettingsDialog::SettingsDialog(const QString& filename,
                                const QString& apiKey,
                                QWidget* parent)
     : QDialog(parent),
       APIkey(apiKey),
-      keySequence(defaultKeySeq)
-{
+      serializationFileName(filename)
+{  
+    QLabel* waitingLabel = new QLabel(tr("Downloading list of available languages ..."),this);
+
+    /* A signal readyToDeserialize() is emitted in createLangGroupBox() method */
+    connect(this, &SettingsDialog::readyToDeserialize, this, [this,waitingLabel]() {
+        waitingLabel->setVisible(false);
+        deserialize(); // the signal deserialized() is emitted here
+    });
+
     createLangGroupBox();
     createKeySequenceGroupBox();
     createOtherSettingsGBox();
@@ -19,15 +30,22 @@ SettingsDialog::SettingsDialog(QKeySequence defaultKeySeq,
     QPushButton* closeButton = new QPushButton(tr("&Close"),this);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
 
+    QPushButton* setDefaultButton = new QPushButton(tr("&Default"),this);
+    connect(setDefaultButton, &QPushButton::clicked, this, [&]() {
+        setDefaultValues();
+    });
+
     QVBoxLayout* layout = new QVBoxLayout(this);
+    layout->addWidget(waitingLabel);
     layout->addWidget(langGBox);
     layout->addWidget(keySequenceGBox);
     layout->addWidget(otherSettingsGBox);
+    layout->addWidget(setDefaultButton);
     layout->addWidget(closeButton);
     layout->setSizeConstraint(QLayout::SetFixedSize);
     setLayout(layout);
 
-    setWindowTitle("Settings");
+    setWindowTitle(tr("Settings"));
 
     QRect availableGeometry = QApplication::desktop()->availableGeometry();
     resize(availableGeometry.width()/4, availableGeometry.height()/1.5);
@@ -75,6 +93,8 @@ void SettingsDialog::createLangGroupBox() {
             sourceLangBox->addItem(langList.value(key).toString(), key);
             resultLangBox->addItem(langList.value(key).toString(), key);
         }
+
+        emit readyToDeserialize();
     });
 
 }
@@ -84,7 +104,7 @@ void SettingsDialog::createKeySequenceGroupBox() {
 
     QLabel* labelBeforeField = new QLabel(tr("Current shortcut: "), this);
 
-    keySequenceField = new QLineEdit(keySequence.toString(), this);
+    keySequenceField = new QLineEdit(this);
     keySequenceField->setReadOnly(true);
 
     QPushButton* setButton = new QPushButton(tr("&Enter new shortcut"),this);
@@ -144,12 +164,60 @@ void SettingsDialog::keyPressEvent(QKeyEvent* keyEvent) {
         if(modifiers & Qt::MetaModifier)
             keyInt += Qt::META;
 
-        keySequence = QKeySequence(keyInt);
-        keySequenceField->setText(keySequence.toString());
+        keySequenceField->setText(QKeySequence(keyInt).toString());
 
         isClicked = false;
         labelAfterButton->setVisible(false);
-
-        emit keySequenceChanged();
     }
+}
+
+void SettingsDialog::setDefaultValues()
+{
+    sourceLangBox->setCurrentIndex(sourceLangBox->findText("English"));
+    resultLangBox->setCurrentIndex(resultLangBox->findText("Russian"));
+    keySequenceField->setText("Ctrl+1");
+    popUpDuration->setValue(4);
+}
+
+void SettingsDialog::serialize()
+{
+    QFile file(serializationFileName);
+    file.open(QIODevice::WriteOnly);
+
+    QDataStream out(&file);
+    out << sourceLangBox->currentText();
+    out << resultLangBox->currentText();
+    out << keySequenceField->text();
+    out << qint32(popUpDuration->value());
+
+    file.close();
+}
+
+void SettingsDialog::deserialize()
+{
+    QFileInfo fileInfo(serializationFileName);
+
+    if (!fileInfo.exists()) {
+        setDefaultValues();
+        show();
+    }
+    else {
+        QFile file(serializationFileName);
+        file.open(QIODevice::ReadOnly);
+
+        qint32 duration;
+        QString sourceLang, resultLang, hotkey;
+
+        QDataStream in(&file);
+        in >> sourceLang >> resultLang >> hotkey >> duration;
+
+        sourceLangBox->setCurrentIndex(sourceLangBox->findText(sourceLang));
+        resultLangBox->setCurrentIndex(resultLangBox->findText(resultLang));
+        keySequenceField->setText(hotkey);
+        popUpDuration->setValue(duration);
+
+        file.close();
+    }
+
+    emit deserialized();
 }
